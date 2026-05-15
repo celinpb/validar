@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso — ValidaDoc</title>
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* Layout exclusivo da tela de login */
+    body {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--cinza-50);
+    }
+
+    /* Painel esquerdo — decorativo / identidade */
+    .login-painel {
+      background: var(--cor-primaria);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: var(--esp-12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-painel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--cor-fundo) 30%, transparent) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--cor-secundaria) 20%, transparent) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .login-painel__marca {
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-painel__sigla {
+      font-family: var(--fonte-mono);
+      font-size: var(--texto-xs);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.5);
+      margin-bottom: var(--esp-3);
+    }
+
+    .login-painel__nome {
+      font-family: var(--fonte-display);
+      font-size: var(--texto-3xl);
+      color: var(--branco);
+      line-height: 1.15;
+      letter-spacing: -.02em;
+    }
+
+    .login-painel__descricao {
+      margin-top: var(--esp-6);
+      font-size: var(--texto-sm);
+      color: rgba(255,255,255,.6);
+      line-height: 1.7;
+      max-width: 320px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Decoração geométrica */
+    .login-painel__deco {
+      position: absolute;
+      right: -60px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 60px solid rgba(255,255,255,.04);
+      z-index: 0;
+    }
+
+    .login-painel__deco2 {
+      position: absolute;
+      left: -80px;
+      bottom: -80px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      border: 50px solid rgba(255,255,255,.03);
+      z-index: 0;
+    }
+
+    .login-painel__rodape {
+      position: relative;
+      z-index: 1;
+      font-size: var(--texto-xs);
+      color: rgba(255,255,255,.3);
+      font-family: var(--fonte-mono);
+    }
+
+    /* Painel direito — formulário */
+    .login-form-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--esp-12);
+      background: var(--branco);
+    }
+
+    .login-form-box {
+      width: 100%;
+      max-width: 380px;
+      animation: slideUp var(--trans-suave);
+    }
+
+    .login-form-box h2 {
+      font-size: var(--texto-2xl);
+      letter-spacing: -.02em;
+      margin-bottom: var(--esp-2);
+    }
+
+    .login-form-box p.subtitulo {
+      font-size: var(--texto-sm);
+      color: var(--cinza-400);
+      margin-bottom: var(--esp-8);
+    }
+
+    /* Input com ícone de olho para senha */
+    .input-senha-wrapper {
+      position: relative;
+    }
+
+    .input-senha-wrapper .form-input {
+      padding-right: 44px;
+    }
+
+    .btn-toggle-senha {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cinza-400);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .btn-toggle-senha:hover { color: var(--cinza-600); }
+
+    /* Requisitos de senha */
+    .requisitos-senha {
+      background: var(--cinza-50);
+      border: 1px solid var(--cinza-200);
+      border-radius: var(--raio-md);
+      padding: var(--esp-4);
+      margin-bottom: var(--esp-5);
+      display: none;
+    }
+
+    .requisitos-senha.visivel { display: block; }
+
+    .req-titulo {
+      font-size: var(--texto-xs);
+      font-weight: 600;
+      color: var(--cinza-500);
+      margin-bottom: var(--esp-3);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      font-family: var(--fonte-mono);
+    }
+
+    .req-item {
+      display: flex;
+      align-items: center;
+      gap: var(--esp-2);
+      font-size: var(--texto-xs);
+      color: var(--cinza-400);
+      margin-bottom: var(--esp-1);
+      transition: color var(--trans-rapida);
+    }
+
+    .req-item.ok { color: var(--cor-valido); }
+
+    .req-icone {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cinza-200);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: transparent;
+      transition: all var(--trans-rapida);
+    }
+
+    .req-item.ok .req-icone {
+      background: var(--cor-valido);
+      color: white;
+    }
+
+    /* Mensagem de erro */
+    #msg-erro {
+      display: none;
+      margin-bottom: var(--esp-5);
+    }
+
+    /* Alerta de sessão expirada */
+    #msg-sessao {
+      display: none;
+      margin-bottom: var(--esp-5);
+    }
+
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .login-painel { display: none; }
+      .login-form-area { padding: var(--esp-8) var(--esp-6); align-items: flex-start; padding-top: var(--esp-16); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Painel esquerdo -->
+  <div class="login-painel">
+    <div class="login-painel__deco"></div>
+    <div class="login-painel__deco2"></div>
+
+    <div class="login-painel__marca">
+      <div class="login-painel__sigla">Sistema de Validação</div>
+      <div class="login-painel__nome" id="painel-nome-sistema">ValidaDoc</div>
+      <p class="login-painel__descricao">
+        Validação documental de matrículas com rastreabilidade completa
+        e controle de acesso por perfil.
+      </p>
+    </div>
+
+    <div class="login-painel__rodape" id="painel-escola">
+      Escola Pública
+    </div>
+  </div>
+
+  <!-- Painel direito — formulário -->
+  <div class="login-form-area">
+    <div class="login-form-box">
+
+      <!-- Tela: Login -->
+      <div id="tela-login">
+        <h2>Bem-vindo</h2>
+        <p class="subtitulo">Acesse com suas credenciais</p>
+
+        <div id="msg-sessao" class="alerta alerta-aviso">
+          ⚠ Sua sessão expirou. Faça login novamente.
+        </div>
+
+        <div id="msg-erro" class="alerta alerta-erro"></div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="input-login">Login</label>
+          <input
+            class="form-input"
+            type="text"
+            id="input-login"
+            placeholder="Seu nome de usuário"
+            autocomplete="username"
+            autofocus
+          >
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="input-senha">Senha</label>
+          <div class="input-senha-wrapper">
+            <input
+              class="form-input"
+              type="password"
+              id="input-senha"
+              placeholder="Sua senha"
+              autocomplete="current-password"
+            >
+            <button class="btn-toggle-senha" type="button" onclick="toggleSenha('input-senha', this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-primario w-full btn-lg" id="btn-entrar" onclick="fazerLogin()">
+          Entrar
+        </button>
+      </div>
+
+      <!-- Tela: Troca de senha obrigatória -->
+      <div id="tela-trocar-senha" style="display:none">
+        <h2>Defina sua senha</h2>
+        <p class="subtitulo">
+          Este é seu primeiro acesso. Crie uma senha pessoal para continuar.
+        </p>
+
+        <div id="msg-erro-senha" class="alerta alerta-erro" style="display:none"></div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="input-nova-senha">Nova senha</label>
+          <div class="input-senha-wrapper">
+            <input
+              class="form-input"
+              type="password"
+              id="input-nova-senha"
+              placeholder="Mínimo 8 caracteres"
+              oninput="validarRequisitos()"
+            >
+            <button class="btn-toggle-senha" type="button" onclick="toggleSenha('input-nova-senha', this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Requisitos visuais -->
+        <div class="requisitos-senha" id="requisitos">
+          <div class="req-titulo">Requisitos</div>
+          <div class="req-item" id="req-tamanho">
+            <div class="req-icone">✓</div>
+            <span>Mínimo 8 caracteres</span>
+          </div>
+          <div class="req-item" id="req-maiuscula">
+            <div class="req-icone">✓</div>
+            <span>Uma letra maiúscula</span>
+          </div>
+          <div class="req-item" id="req-minuscula">
+            <div class="req-icone">✓</div>
+            <span>Uma letra minúscula</span>
+          </div>
+          <div class="req-item" id="req-numero">
+            <div class="req-icone">✓</div>
+            <span>Um número</span>
+          </div>
+          <div class="req-item" id="req-especial">
+            <div class="req-icone">✓</div>
+            <span>Um caractere especial (!@#$%...)</span>
+          </div>
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label" for="input-confirmar-senha">Confirmar senha</label>
+          <div class="input-senha-wrapper">
+            <input
+              class="form-input"
+              type="password"
+              id="input-confirmar-senha"
+              placeholder="Repita a nova senha"
+            >
+            <button class="btn-toggle-senha" type="button" onclick="toggleSenha('input-confirmar-senha', this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-primario w-full btn-lg" id="btn-salvar-senha" onclick="salvarNovaSenha()">
+          Definir senha e entrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+
+    // ── Inicialização ──────────────────────────────────────────────────────
+
+    (async function init() {
+      // Redireciona se já estiver logado
+      if (State.usuario.logado) {
+        window.location.href = 'app.html';
+        return;
+      }
+
+      // Exibe aviso de sessão expirada
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('sessao') === 'expirada') {
+        document.getElementById('msg-sessao').style.display = 'flex';
+      }
+
+      // Carrega config para aplicar tema e nome do sistema
+      try {
+        const cfg = await Api.getConfigCompleto();
+        if (cfg) {
+          State.carregarConfig(cfg);
+          document.getElementById('painel-nome-sistema').textContent =
+            cfg.config?.sistema_nome || 'ValidaDoc';
+          document.getElementById('painel-escola').textContent =
+            cfg.config?.sistema_escola || 'Escola Pública';
+          document.title = `Acesso — ${cfg.config?.sistema_nome || 'ValidaDoc'}`;
+        }
+      } catch (e) {
+        console.warn('Config não carregada:', e.message);
+      }
+
+      // Enter para submeter
+      document.getElementById('input-senha').addEventListener('keydown', e => {
+        if (e.key === 'Enter') fazerLogin();
+      });
+      document.getElementById('input-login').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('input-senha').focus();
+      });
+    })();
+
+    // ── Login ──────────────────────────────────────────────────────────────
+
+    async function fazerLogin() {
+      const login = document.getElementById('input-login').value.trim();
+      const senha = document.getElementById('input-senha').value;
+      const msgErro = document.getElementById('msg-erro');
+      const btn = document.getElementById('btn-entrar');
+
+      msgErro.style.display = 'none';
+
+      if (!login || !senha) {
+        mostrarErro(msgErro, 'Preencha login e senha.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Verificando...';
+
+      try {
+        const res = await Api.auth.login(login, senha);
+
+        if (!res || !res.ok) {
+          mostrarErro(msgErro, res?.erro || 'Erro ao fazer login.');
+          return;
+        }
+
+        // Salva sessão
+        State.usuario.salvar({
+          token:  res.token,
+          papel:  res.papel,
+          nome:   res.nome,
+          userID: res.userID
+        });
+
+        if (res.primeiroAcesso) {
+          // Redireciona para troca de senha
+          document.getElementById('tela-login').style.display = 'none';
+          document.getElementById('tela-trocar-senha').style.display = 'block';
+          document.getElementById('input-nova-senha').focus();
+        } else {
+          window.location.href = 'app.html';
+        }
+
+      } catch (e) {
+        mostrarErro(msgErro, 'Erro de conexão com o servidor. Tente novamente.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Entrar';
+      }
+    }
+
+    // ── Troca de senha ─────────────────────────────────────────────────────
+
+    function validarRequisitos() {
+      const senha = document.getElementById('input-nova-senha').value;
+      const reqs = document.getElementById('requisitos');
+      reqs.classList.add('visivel');
+
+      const checks = {
+        'req-tamanho':  senha.length >= 8,
+        'req-maiuscula': /[A-Z]/.test(senha),
+        'req-minuscula': /[a-z]/.test(senha),
+        'req-numero':   /[0-9]/.test(senha),
+        'req-especial': /[^A-Za-z0-9]/.test(senha)
+      };
+
+      Object.entries(checks).forEach(([id, ok]) => {
+        document.getElementById(id)?.classList.toggle('ok', ok);
+      });
+    }
+
+    async function salvarNovaSenha() {
+      const nova = document.getElementById('input-nova-senha').value;
+      const confirmar = document.getElementById('input-confirmar-senha').value;
+      const msgErro = document.getElementById('msg-erro-senha');
+      const btn = document.getElementById('btn-salvar-senha');
+
+      msgErro.style.display = 'none';
+
+      if (nova !== confirmar) {
+        mostrarErro(msgErro, 'As senhas não coincidem.');
+        return;
+      }
+
+      // Validação local de requisitos
+      const falhas = [];
+      if (nova.length < 8)           falhas.push('mínimo 8 caracteres');
+      if (!/[A-Z]/.test(nova))       falhas.push('letra maiúscula');
+      if (!/[a-z]/.test(nova))       falhas.push('letra minúscula');
+      if (!/[0-9]/.test(nova))       falhas.push('número');
+      if (!/[^A-Za-z0-9]/.test(nova))falhas.push('caractere especial');
+
+      if (falhas.length) {
+        mostrarErro(msgErro, `Senha não atende os requisitos: ${falhas.join(', ')}.`);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Salvando...';
+
+      try {
+        const res = await Api.auth.trocarSenha(nova);
+
+        if (!res || !res.ok) {
+          mostrarErro(msgErro, res?.erro || 'Erro ao salvar senha.');
+          return;
+        }
+
+        window.location.href = 'app.html';
+
+      } catch (e) {
+        mostrarErro(msgErro, 'Erro de conexão. Tente novamente.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Definir senha e entrar';
+      }
+    }
+
+    // ── Utilitários locais ─────────────────────────────────────────────────
+
+    function mostrarErro(el, msg) {
+      el.textContent = msg;
+      el.style.display = 'flex';
+    }
+
+    function toggleSenha(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      btn.style.color = mostrar ? 'var(--cor-primaria)' : 'var(--cinza-400)';
+    }
+
+  </script>
+</body>
+</html>
