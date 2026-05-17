@@ -159,6 +159,7 @@ function _renderTelaValidacao(container) {
             ${Icone.anterior()} Voltar
           </button>
           ${badgeStatus(insc.status)}
+          ${insc.situacao ? _badgeSituacao(insc.situacao) : ''}
         </div>
         <h1 style="font-size:var(--texto-2xl);letter-spacing:-.02em">
           ${insc.nomeSocialBool && insc.nomeSocial ? insc.nomeSocial : insc.nomeCompleto}
@@ -521,4 +522,10 @@ function _extrairMotivoLivre(motivoStr) {
     const obj = JSON.parse(motivoStr);
     return obj.livre || '';
   } catch { return motivoStr; }
+}
+
+function _badgeSituacao(situacao) {
+  if (!situacao) return '';
+  const deferida = situacao.toUpperCase() === 'DEFERIDA';
+  return `<span class="badge ${deferida ? 'badge-valido' : 'badge-invalido'}">${situacao.toUpperCase()}</span>`;
 }
