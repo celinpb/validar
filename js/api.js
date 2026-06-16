@@ -10,7 +10,7 @@
 
 //const API_URL = 'COLE_AQUI_A_URL_DO_SEU_WEB_APP'; // ← único lugar a editar
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyJBq5WbYa8KzI0tHDn84rgsXykxHoa4z-O6QxKNfmKsOd9vJ4PW8jFFQYby0Nw69WZ/exec'; // ← único lugar a editar
+const API_URL = 'https://script.google.com/macros/s/AKfycbxOkgLJsxpCOhtNWEfle6ct94kroezT97HYkrBpWpb8LJHVOrP62d1zh1svIUTPmKiOAA/exec'; // ← único lugar a editar
 
 // ─── Utilitários internos ──────────────────────────────────────────────────
 
